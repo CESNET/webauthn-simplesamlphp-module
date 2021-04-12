@@ -14,8 +14,6 @@ jobs:
     - name: Cache Composer dependencies
       uses: actions/cache@v2
       with:
-        php_version: 7.4
-        version: 2
         path: /tmp/composer-cache
         key: ${{ runner.os }}-${{ hashFiles('**/composer.lock') }}
     - name: Install dependencies
