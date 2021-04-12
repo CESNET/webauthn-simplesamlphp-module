@@ -11,20 +11,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
-    - name: Validate composer.json and composer.lock
-      run: composer validate
-    - name: Cache Composer packages
-      id: composer-cache
+    - name: Cache Composer dependencies
       uses: actions/cache@v2
       with:
-        path: vendor
-        php-version: 7.4
-        key: ${{ runner.os }}-php-${{ hashFiles('**/composer.lock') }}
-        restore-keys: |
-          ${{ runner.os }}-php-
+        php_version: 7.4
+        version: 2
+        path: /tmp/composer-cache
+        key: ${{ runner.os }}-${{ hashFiles('**/composer.lock') }}
     - name: Install dependencies
-      if: steps.composer-cache.outputs.cache-hit != 'true'
-      run: composer install --prefer-dist --no-progress --no-suggest
+      uses: php-actions/composer@v5
+      with:
+        php_version: 7.4
+        version: 2
   release:
     name: Release
     runs-on: ubuntu-latest
