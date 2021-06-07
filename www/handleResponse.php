@@ -5,6 +5,10 @@ declare(strict_types=1);
 use Jose\Component\Core\JWK;
 use Jose\Component\KeyManagement\JWKFactory;
 use Jose\Easy\Build;
+use SimpleSAML\Utils\HTTP;
+use SimpleSAML\Auth\State;
+use SimpleSAML\Module;
+use SimpleSAML\Auth\ProcessingChain;
 
 if (! array_key_exists('StateId', $_REQUEST)) {
     throw new \SimpleSAML\Error\BadRequest(
@@ -51,9 +55,19 @@ $jws = Build::jws() // We build a JWS
 $api_url = $state['api_url'].'/'.$jws;
 $response_json = file_get_contents($api_url);
 $response = json_decode($response_json, true);
-
-if ('okay' !== $response['result'] or $response['nonce'] !== $original_nonce) {
+if (('okay' !== $response['result'] && 'unavailable' !== $response['result']) ||
+    $response['nonce'] !== $original_nonce ||
+    ('unavailable' === $response['result'] && is_null($state['skip_redirect_url']))) {
     throw new Exception('The authentication was unsuccessful');
+} elseif ($response['result'] === 'unavailable') {
+    $state['Attributes']['MFA_RESULT'] = 'Unauthenticated';
+} elseif ($response['result'] === 'okay') {
+    $state['Attributes']['MFA_RESULT'] = 'Authenticated';
 }
 
-\SimpleSAML\Auth\ProcessingChain::resumeProcessing($state);
+if (!is_null($state['skip_redirect_url'])) {
+    $id = State::saveState($state, 'authSwitcher:request');
+    $url = Module::getModuleURL('authswitcher/switchMfaMethods.php');
+    HTTP::redirectTrustedURL($state['skip_redirect_url'], ['StateId' => $id]);
+}
+ProcessingChain::resumeProcessing($state);

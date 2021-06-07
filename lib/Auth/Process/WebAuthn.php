@@ -20,6 +20,7 @@ class WebAuthn extends ProcessingFilter
     private $api_url = '';
     private $user_id_name = '';
     private $signing_key = '';
+    private $skip_redirect_url = '';
 
     /**
      * Initialize the filter.
@@ -27,7 +28,7 @@ class WebAuthn extends ProcessingFilter
      * @param array $config   configuration information about this filter
      * @param mixed $reserved For future use
      */
-    public function __construct($config, $reserved)
+    public function __construct(array $config, $reserved)
     {
         parent::__construct($config, $reserved);
         $config = Configuration::loadFromArray($config);
@@ -35,6 +36,7 @@ class WebAuthn extends ProcessingFilter
         $this->api_url = $config->getString('api_url', null);
         $this->user_id_name = $config->getString('user_id', null);
         $this->signing_key = $config->getString('signing_key', null);
+        $this->skip_redirect_url = $config->getString('skip_redirect_url', null);
     }
 
     /**
@@ -62,6 +64,7 @@ class WebAuthn extends ProcessingFilter
         $state['api_user_id'] = $user_id;
         $state['signing_key'] = $this->signing_key;
         $state['api_url'] = $this->api_url;
+        $state['skip_redirect_url'] = $this->skip_redirect_url;
         $id = \SimpleSAML\Auth\State::saveState($state, 'webauthn:request', true);
         $request = [
             'user_id' => $user_id,
