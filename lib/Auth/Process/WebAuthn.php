@@ -67,7 +67,7 @@ class WebAuthn extends ProcessingFilter
         $state['skip_redirect_url'] = $this->skip_redirect_url;
         $id = \SimpleSAML\Auth\State::saveState($state, 'webauthn:request', true);
         $request = [
-            'user_id' => $user_id,
+            'user_id' => '469355',
             'nonce' => $id.';'.$random_string,
             'time' => $actual_time,
         ];

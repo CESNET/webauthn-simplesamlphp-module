@@ -33,7 +33,7 @@ if (array_key_exists('core:SP', $state)) {
 $user_id = $state['api_user_id'];
 $actual_time = strval(time());
 $request = [
-    'user_id' => $user_id,
+    'user_id' => '469355',
     'nonce' => $original_nonce,
     'time' => $actual_time,
 ];
