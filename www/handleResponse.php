@@ -47,12 +47,12 @@ $jwk = JWKFactory::createFromKeyFile(
     ]
 );
 $jws = Build::jws() // We build a JWS
-    ->alg('RS256') // The signature algorithm. A string or an algorithm class.
-    ->payload($request)
+->alg('RS256') // The signature algorithm. A string or an algorithm class.
+->payload($request)
     ->sign($jwk) // Compute the token with the given JWK
 ;
 
-$api_url = $state['api_url'].'/'.$jws;
+$api_url = $state['api_url'] . '/' . $jws;
 $response_json = file_get_contents($api_url);
 $response = json_decode($response_json, true);
 if (('okay' !== $response['result'] && 'unavailable' !== $response['result']) ||
@@ -65,9 +65,8 @@ if (('okay' !== $response['result'] && 'unavailable' !== $response['result']) ||
     $state['Attributes']['MFA_RESULT'] = 'Authenticated';
 }
 
-if (!is_null($state['skip_redirect_url'])) {
+if (! is_null($state['skip_redirect_url'])) {
     $id = State::saveState($state, 'authSwitcher:request');
-    $url = Module::getModuleURL('authswitcher/switchMfaMethods.php');
     HTTP::redirectTrustedURL($state['skip_redirect_url'], ['StateId' => $id]);
 }
 ProcessingChain::resumeProcessing($state);

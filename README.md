@@ -20,6 +20,8 @@ If the flask module runs at `https://flask.example.com/webauthn/`, use the follo
     'api_url' => 'https://flask.example.com/webauthn/request',
     'signing_key' => '/var/webauthn_private.pem',
     'user_id' => 'uid',
+    'skip_redirect_url' => 'https://example.com/simplesaml/switchMethods.php',
+    'hide_manage_tokens' => 'hide_manage_tokens',
 ],
 ```
 
