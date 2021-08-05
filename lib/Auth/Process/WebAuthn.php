@@ -21,11 +21,15 @@ class WebAuthn extends ProcessingFilter
     private $user_id_name = '';
     private $signing_key = '';
     private $skip_redirect_url = '';
+    private $hide_manage_tokens_acr = 'hide_manage_tokens';
+
+    private const SAML_REQUESTED_AUTHN_CONTEXT = 'saml:RequestedAuthnContext';
+    private const AUTHN_CONTEXT_CLASS_REFERENCE = 'AuthnContextClassRef';
 
     /**
      * Initialize the filter.
      *
-     * @param array $config   configuration information about this filter
+     * @param array $config configuration information about this filter
      * @param mixed $reserved For future use
      */
     public function __construct(array $config, $reserved)
@@ -37,6 +41,7 @@ class WebAuthn extends ProcessingFilter
         $this->user_id_name = $config->getString('user_id', null);
         $this->signing_key = $config->getString('signing_key', null);
         $this->skip_redirect_url = $config->getString('skip_redirect_url', null);
+        $this->hide_manage_tokens_acr = $config->getString('hide_manage_tokens_acr', $this->hide_manage_tokens_acr);
     }
 
     /**
@@ -58,7 +63,18 @@ class WebAuthn extends ProcessingFilter
         }
         $user_id = $attributes[$this->user_id_name][0];
         $actual_time = strval(time());
-        $random_string = $actual_time.bin2hex(random_bytes(4));
+        $random_string = $actual_time . bin2hex(random_bytes(4));
+
+        $hide_manage_tokens = false;
+        if (isset($state[self::SAML_REQUESTED_AUTHN_CONTEXT]) &&
+            isset($state[self::SAML_REQUESTED_AUTHN_CONTEXT][self::AUTHN_CONTEXT_CLASS_REFERENCE]) &&
+            in_array(
+                $this->hide_manage_tokens_acr,
+                $state[self::SAML_REQUESTED_AUTHN_CONTEXT][self::AUTHN_CONTEXT_CLASS_REFERENCE],
+                true
+            )) {
+            $hide_manage_tokens = true;
+        }
 
         $state['random_string'] = $random_string;
         $state['api_user_id'] = $user_id;
@@ -68,8 +84,9 @@ class WebAuthn extends ProcessingFilter
         $id = \SimpleSAML\Auth\State::saveState($state, 'webauthn:request', true);
         $request = [
             'user_id' => $user_id,
-            'nonce' => $id.';'.$random_string,
+            'nonce' => $id . ';' . $random_string,
             'time' => $actual_time,
+            $this->hide_manage_tokens_acr => $hide_manage_tokens,
         ];
 
         $jwk = JWKFactory::createFromKeyFile(
@@ -81,12 +98,12 @@ class WebAuthn extends ProcessingFilter
             ]
         );
         $jws = Build::jws() // We build a JWS
-            ->alg('RS256') // The signature algorithm. A string or an algorithm class.
-            ->payload($request)
+        ->alg('RS256') // The signature algorithm. A string or an algorithm class.
+        ->payload($request)
             ->sign($jwk) // Compute the token with the given JWK
         ;
 
-        $url = $this->redirect_url.'/'.$jws;
+        $url = $this->redirect_url . '/' . $jws;
         \SimpleSAML\Utils\HTTP::redirectUntrustedURL($url);
     }
 }
