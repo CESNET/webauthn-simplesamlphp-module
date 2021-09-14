@@ -1,3 +1,10 @@
+## [1.3.2](https://github.com/CESNET/simplesamlphp-module-webauthn/compare/v1.3.1...v1.3.2) (2021-09-14)
+
+
+### Bug Fixes
+
+* **deps:** update dependency web-token/jwt-easy to v2.2.11 ([7d58516](https://github.com/CESNET/simplesamlphp-module-webauthn/commit/7d58516ee217565413185a6c213e9d023d09d2bf))
+
 ## [1.3.1](https://github.com/CESNET/simplesamlphp-module-webauthn/compare/v1.3.0...v1.3.1) (2021-09-14)
 
 
