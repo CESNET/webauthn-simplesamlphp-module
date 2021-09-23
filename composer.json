@@ -21,6 +21,6 @@
     "web-token/jwt-signature-algorithm-hmac": "Adds HMAC based signature algorithms"
   },
   "require-dev": {
-    "symplify/easy-coding-standard": "9.4.64"
+    "symplify/easy-coding-standard": "9.4.65"
   }
 }
